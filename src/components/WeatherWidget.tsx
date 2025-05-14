@@ -6,6 +6,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from "recharts";
 
+
 // Types
 type WeatherData = {
   main: { temp: number; humidity: number; feels_like: number; pressure: number };
@@ -48,6 +49,47 @@ type CitySuggestion = {
   countryCode: string;
 };
 
+// Define chart data types
+type ProcessedForecastData = {
+  tempChartData: DayForecast[];
+  humidityChartData: DayForecast[];
+  windChartData: DayForecast[];
+  dailyData: DayForecast[];
+};
+
+type DayForecast = {
+  date: string;
+  dt: number;
+  max: number;
+  min: number;
+  avg: number;
+  humidity: number;
+  wind: number;
+  precipitation: number;
+};
+
+// Type for day data during processing
+type DayData = {
+  temps: number[];
+  humidity: number[];
+  wind: number[];
+  precipitation: number[];
+  date: string;
+  dt: number;
+};
+
+// Type for tooltip props
+type CustomTooltipProps = {
+  active?: boolean;
+  payload?: Array<{
+    value: number;
+    name: string;
+    dataKey: string;
+    color: string;
+  }>;
+  label?: string;
+};
+
 // API keys - in a real application, you would use environment variables with Next.js config
 // For demo purposes only - replace with your actual API keys
 const OPENWEATHER_API_KEY = "e902884bb744e3034b5b8c9d6c97ba9d";
@@ -56,7 +98,7 @@ const GEODB_API_KEY = "d00b35d961msh2c22e0b9475dea0p10109ejsna38317da7dc3";
 const WeatherWidget = () => {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [forecastData, setForecastData] = useState<ForecastData | null>(null);
-  const [processedForecastData, setProcessedForecastData] = useState<any>(null);
+  const [processedForecastData, setProcessedForecastData] = useState<ProcessedForecastData | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [citySuggestions, setCitySuggestions] = useState<CitySuggestion[]>([]);
@@ -77,7 +119,7 @@ const WeatherWidget = () => {
     if (!data || !data.list || !Array.isArray(data.list)) return null;
     
     // Group forecast by day
-    const dailyData: { [key: string]: any } = {};
+    const dailyData: Record<string, DayData> = {};
     
     data.list.forEach(item => {
       const date = new Date(item.dt * 1000);
@@ -101,7 +143,7 @@ const WeatherWidget = () => {
     });
     
     // Calculate min/max/avg values for each day
-    const processedData = Object.values(dailyData).map((day: any) => {
+    const processedData = Object.values(dailyData).map((day: DayData) => {
       return {
         date: day.date,
         dt: day.dt,
@@ -115,7 +157,7 @@ const WeatherWidget = () => {
     });
     
     // Sort by date and limit to 7 days
-    const sortedData = processedData.sort((a: any, b: any) => a.dt - b.dt).slice(0, 7);
+    const sortedData = processedData.sort((a, b) => a.dt - b.dt).slice(0, 7);
     
     return {
       tempChartData: sortedData,
@@ -163,18 +205,20 @@ const WeatherWidget = () => {
       const processed = processForecastData(forecastData);
       setProcessedForecastData(processed);
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to fetch weather data:", err);
       
       // More descriptive error message
-      if (err.message.includes('401')) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      
+      if (errorMessage.includes('401')) {
         setError("Authentication failed. Please check your API key.");
-      } else if (err.message.includes('429')) {
+      } else if (errorMessage.includes('429')) {
         setError("Too many requests. Please try again later.");
-      } else if (err.message.includes('404')) {
+      } else if (errorMessage.includes('404')) {
         setError("Location not found. Please try a different location.");
       } else {
-        setError(`Failed to fetch weather data: ${err.message}`);
+        setError(`Failed to fetch weather data: ${errorMessage}`);
       }
     } finally {
       setIsLoading(false);
@@ -209,7 +253,15 @@ const WeatherWidget = () => {
         throw new Error("Invalid response from city search API");
       }
       
-      const suggestions: CitySuggestion[] = data.data.map((city: any) => ({
+      interface GeoCityData {
+        name: string;
+        latitude: number;
+        longitude: number;
+        country: string;
+        countryCode: string;
+      }
+      
+      const suggestions: CitySuggestion[] = data.data.map((city: GeoCityData) => ({
         name: city.name,
         latitude: city.latitude,
         longitude: city.longitude,
@@ -218,9 +270,10 @@ const WeatherWidget = () => {
       }));
       
       setCitySuggestions(suggestions);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to fetch city suggestions:", err);
-      setError(`Failed to fetch city suggestions: ${err.message}`);
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      setError(`Failed to fetch city suggestions: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
@@ -332,7 +385,7 @@ const WeatherWidget = () => {
   };
 
   // Get custom tooltip for temperature chart
-  const CustomTempTooltip = ({ active, payload, label }: any) => {
+  const CustomTempTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 border border-gray-200 rounded shadow">
@@ -347,7 +400,7 @@ const WeatherWidget = () => {
   };
 
   // Add a fallback function to handle potentially missing data
-  const safelyRenderForecast = (data: any) => {
+  const safelyRenderForecast = (data: DayForecast[] | undefined) => {
     if (!data || !Array.isArray(data) || data.length === 0) {
       return null;
     }
@@ -399,6 +452,7 @@ const WeatherWidget = () => {
                 className="p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-0"
                 tabIndex={0}
                 role="option"
+                aria-selected={false}
               >
                 {city.name}, {city.countryCode}
               </li>
@@ -524,7 +578,7 @@ const WeatherWidget = () => {
           </ResponsiveContainer>
 
           <div className="grid grid-cols-7 gap-2 mt-4">
-            {safelyRenderForecast(processedForecastData.dailyData)?.map((day: any, index: number) => (
+            {safelyRenderForecast(processedForecastData.dailyData)?.map((day: DayForecast, index: number) => (
               <div key={index} className="text-center">
                 <p className="text-xs text-gray-600">
                   {day.date}
