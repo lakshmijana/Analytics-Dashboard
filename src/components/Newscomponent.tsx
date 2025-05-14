@@ -28,7 +28,7 @@ interface NewsApiResponse {
 
 // API Functions
 const API_KEY = process.env.NEXT_PUBLIC_NEWS_API_KEY;
-console.log(API_KEY)
+
 const BASE_URL = 'https://newsapi.org/v2';
 
 async function fetchNewsByCategory(category: Category, page: number = 1): Promise<NewsApiResponse> {
