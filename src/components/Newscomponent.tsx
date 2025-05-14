@@ -194,7 +194,7 @@ export default function NewsApp() {
     setLoading(false);
   };
 
-  const useMockData = () => !API_KEY;
+  const isMockData = () => !API_KEY;
 
   return (
     <main className="p-6 max-w-6xl mx-auto">
@@ -204,7 +204,7 @@ export default function NewsApp() {
       {error && <ErrorBanner message={error} apiKey={API_KEY} />}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {(useMockData()
+        {(isMockData()
           ? [
               {
                 source: { id: null, name: 'Mock Source' },
@@ -223,7 +223,7 @@ export default function NewsApp() {
         ))}
       </div>
 
-      {hasMore && !useMockData() && (
+      {hasMore && !isMockData() && (
         <div className="flex justify-center mt-8">
           <button
             onClick={() => loadArticles('loadMore')}
