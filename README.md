@@ -14,27 +14,113 @@ pnpm dev
 # or
 bun dev
 ```
+# 📊 PGAGI Analytics Dashboard
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The **PGAGI Analytics Dashboard** is a responsive Next.js application that provides real-time analytics for:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- 📈 Stock Market (finance)
+- 🌦️ Weather Updates
+- 📰 Latest News
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Built using **Next.js**, **Tailwind CSS**, **Framer Motion**, and **Lucide Icons**.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## ✨ Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Interactive dashboard tiles with smooth animations
+- Real-time API data for weather, news, and financial markets
+- Mobile responsive and clean design
+- Easy navigation between dashboards
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🚀 Getting Started
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 1. Clone the Repository
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-=======
-# Analytics-Dashboard
->>>>>>> d0db72a792ea360b35581fdc68c412d4b01dc96e
+```bash
+git clone https://github.com/lakshmijana/Analytics-Dashboard.git
+cd Analytics-Dashboard
+2. Install Dependencies
+bash
+
+npm install
+3. Set Up Environment Variables
+Create a .env.local file in the root folder and add your API keys:
+
+
+# .env.local
+
+# OpenWeatherMap API
+NEXT_PUBLIC_WEATHER_API_KEY=your_openweather_api_key
+
+# NewsAPI
+NEXT_PUBLIC_NEWS_API_KEY=your_newsapi_key
+
+# Finance API (e.g., Alpha Vantage)
+NEXT_PUBLIC_FINANCE_API_KEY=your_alpha_vantage_key
+
+
+4. Run the Development Server
+bash
+Copy
+Edit
+npm run dev
+Open http://localhost:3000 in your browser to see the app.
+
+🔐 Environment Variables
+Variable Name	Description
+NEXT_PUBLIC_WEATHER_API_KEY	API key for weather data (OpenWeatherMap)
+NEXT_PUBLIC_NEWS_API_KEY	API key for news (NewsAPI)
+NEXT_PUBLIC_FINANCE_API_KEY	API key for finance data (Alpha Vantage)
+
+🔗 Get API Keys From:
+🌦️ OpenWeatherMap
+
+📰 NewsAPI
+
+📈 Alpha Vantage
+
+🛠 Tech Stack
+Next.js
+
+React
+
+Tailwind CSS
+
+Framer Motion
+
+Lucide Icons
+
+
+
+
+---
+
+### ✅ Next Step:
+
+1. Create a new file in your root folder named `README.md`.
+2. Paste the above content into it.
+3. Save and commit:
+
+```bash
+git add README.md
+git commit -m "Add project README with setup and API usage"
+git push origin main
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
