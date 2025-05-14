@@ -1,9 +1,9 @@
+
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
 
-
-// TypeScript Types
 type Category = 'technology' | 'sports' | 'business' | 'health' | 'entertainment' | 'general';
 
 interface Article {
@@ -26,44 +26,40 @@ interface NewsApiResponse {
   articles: Article[];
 }
 
-// API Functions
 const API_KEY = process.env.NEXT_PUBLIC_NEWS_API_KEY;
-
 const BASE_URL = 'https://newsapi.org/v2';
 
 async function fetchNewsByCategory(category: Category, page: number = 1): Promise<NewsApiResponse> {
   try {
-    const response = await fetch(
-      `${BASE_URL}/top-headlines?country=us&category=${category}&page=${page}&apiKey=${API_KEY}`
-    );
-    
+    if (!API_KEY) throw new Error('NEWS_API_KEY is not configured');
+
+    const apiUrl = `${BASE_URL}/top-headlines?country=us&category=${category}&page=${page}&apiKey=${API_KEY}`;
+    const response = await fetch(apiUrl);
+
     if (!response.ok) {
-      throw new Error('Failed to fetch news');
+      const errorData = await response.json().catch(() => null);
+      console.error('API Error:', errorData);
+      throw new Error(`Status ${response.status}: ${response.statusText}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error fetching news:', error);
-    return {
-      status: 'error',
-      totalResults: 0,
-      articles: []
-    };
+    return { status: 'error', totalResults: 0, articles: [] };
   }
 }
 
-// Component: Category Filter
-function CategoryFilter({ 
-  selectedCategory, 
-  onCategoryChange 
-}: { 
-  selectedCategory: Category; 
-  onCategoryChange: (category: Category) => void 
+function CategoryFilter({
+  selectedCategory,
+  onCategoryChange
+}: {
+  selectedCategory: Category;
+  onCategoryChange: (category: Category) => void;
 }) {
   const categories: Category[] = ['general', 'technology', 'sports', 'business', 'health', 'entertainment'];
 
   return (
-    <div className="flex flex-wrap justify-center gap-2 mb-6">
+    <div className="flex flex-wrap justify-center gap-2 my-4">
       {categories.map((category) => (
         <button
           key={category}
@@ -81,41 +77,26 @@ function CategoryFilter({
   );
 }
 
-// Component: Article Card
-function ArticleCard({ 
-  article, 
-  onClick 
-}: { 
-  article: Article; 
-  onClick: () => void 
-}) {
+function ArticleCard({ article, onClick }: { article: Article; onClick: () => void }) {
   return (
-    <div 
+    <div
       onClick={onClick}
       className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-300"
     >
-      <div className="relative h-48 w-full">
-        {article.urlToImage ? (
-          <img
-            src={article.urlToImage}
-            alt={article.title}
-            className="object-cover w-full h-full"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = 'https://via.placeholder.com/640x360?text=No+Image';
-            }}
-          />
-        ) : (
-          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-            <span className="text-gray-400">No image available</span>
-          </div>
-        )}
+      <div className="h-48 w-full relative">
+        <img
+          src={article.urlToImage || 'https://via.placeholder.com/640x360?text=No+Image'}
+          alt={article.title}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/640x360?text=No+Image';
+          }}
+        />
       </div>
-      
       <div className="p-4">
         <h3 className="text-lg font-semibold line-clamp-2 mb-2">{article.title}</h3>
         <p className="text-gray-600 text-sm line-clamp-3 mb-3">{article.description || 'No description available'}</p>
-        
-        <div className="flex justify-between items-center text-xs text-gray-500">
+        <div className="flex justify-between text-xs text-gray-500">
           <span>{article.source.name}</span>
           <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
         </div>
@@ -124,52 +105,34 @@ function ArticleCard({
   );
 }
 
-// Component: Article Modal
-function ArticleModal({ 
-  article, 
-  onClose 
-}: { 
-  article: Article | null; 
-  onClose: () => void 
-}) {
+function ArticleModal({ article, onClose }: { article: Article | null; onClose: () => void }) {
   if (!article) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div 
+      <div
         className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {article.urlToImage && (
-          <img 
-            src={article.urlToImage} 
-            alt={article.title} 
-            className="w-full h-64 object-cover" 
-          />
-        )}
-        
+        {article.urlToImage && <img src={article.urlToImage} alt={article.title} className="w-full h-64 object-cover" />}
         <div className="p-6">
           <h2 className="text-2xl font-bold mb-3">{article.title}</h2>
-          
           <div className="flex justify-between text-sm text-gray-600 mb-4">
             <span>{article.author ? `By ${article.author}` : article.source.name}</span>
             <span>{new Date(article.publishedAt).toLocaleString()}</span>
           </div>
-          
           <p className="text-gray-800 mb-6">{article.content || article.description}</p>
-          
-          <a 
-            href={article.url} 
-            target="_blank" 
+          <a
+            href={article.url}
+            target="_blank"
             rel="noopener noreferrer"
-            className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
             Read Full Article
           </a>
-          
-          <button 
+          <button
             onClick={onClose}
-            className="ml-4 px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 transition-colors"
+            className="ml-4 px-4 py-2 border border-gray-300 rounded hover:bg-gray-100"
           >
             Close
           </button>
@@ -179,7 +142,19 @@ function ArticleModal({
   );
 }
 
-// Main Component: NewsFeed
+function ErrorBanner({ message, apiKey }: { message: string; apiKey: string | undefined }) {
+  return (
+    <div className="bg-red-100 text-red-700 p-4 rounded mb-4">
+      <strong>Error:</strong> {message}
+      {!apiKey && (
+        <div className="mt-2 bg-yellow-100 text-yellow-800 p-2 rounded">
+          Please set <code>NEXT_PUBLIC_NEWS_API_KEY</code> in your <code>.env.local</code>.
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function NewsApp() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -190,119 +165,76 @@ export default function NewsApp() {
   const [hasMore, setHasMore] = useState<boolean>(true);
 
   useEffect(() => {
-    setLoading(true);
     setArticles([]);
     setPage(1);
-    setHasMore(true);
-    
-    fetchNewsByCategory(selectedCategory)
-      .then((data) => {
-        setArticles(data.articles);
-        setHasMore(data.articles.length < data.totalResults);
-        setError(null);
-      })
-      .catch((err) => {
-        setError('Failed to load news. Please try again.');
-        console.error(err);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    loadArticles('initial');
   }, [selectedCategory]);
 
-  const loadMoreArticles = () => {
-    if (loading || !hasMore) return;
-    
-    const nextPage = page + 1;
+  const loadArticles = async (type: 'initial' | 'loadMore') => {
+    if (!API_KEY) {
+      setError('Missing API key');
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
-    
-    fetchNewsByCategory(selectedCategory, nextPage)
-      .then((data) => {
-        setArticles([...articles, ...data.articles]);
-        setPage(nextPage);
-        setHasMore(articles.length + data.articles.length < data.totalResults);
-        setError(null);
-      })
-      .catch((err) => {
-        setError('Failed to load more articles. Please try again.');
-        console.error(err);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    const currentPage = type === 'loadMore' ? page + 1 : 1;
+
+    const data = await fetchNewsByCategory(selectedCategory, currentPage);
+
+    if (data.status === 'error') {
+      setError('API returned an error.');
+    } else {
+      setArticles((prev) => (type === 'loadMore' ? [...prev, ...data.articles] : data.articles));
+      setPage(currentPage);
+      setHasMore(data.articles.length + articles.length < data.totalResults);
+      setError(null);
+    }
+
+    setLoading(false);
   };
 
-  const handleCategoryChange = (category: Category) => {
-    setSelectedCategory(category);
-  };
-
-  const openArticleDetails = (article: Article) => {
-    setSelectedArticle(article);
-  };
-
-  const closeArticleDetails = () => {
-    setSelectedArticle(null);
-  };
+  const useMockData = () => !API_KEY;
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <header className="mb-8 text-center">
-          <h1 className="text-3xl font-bold mb-2">News Explorer</h1>
-          <p className="text-gray-600">Stay updated with the latest news from around the world</p>
-        </header>
-        
-        <CategoryFilter selectedCategory={selectedCategory} onCategoryChange={handleCategoryChange} />
-        
-        {error && (
-          <div className="bg-red-100 text-red-700 p-4 rounded mb-6">
-            {error}
-          </div>
-        )}
-        
-        {loading && articles.length === 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, index) => (
-              <div key={index} className="bg-gray-100 rounded-lg h-80 animate-pulse"></div>
-            ))}
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {articles.map((article, index) => (
-                <ArticleCard
-                  key={`${article.title}-${index}`}
-                  article={article}
-                  onClick={() => openArticleDetails(article)}
-                />
-              ))}
-            </div>
-            
-            {articles.length === 0 && !loading && (
-              <div className="text-center py-10">
-                <p className="text-gray-600">No articles found for this category.</p>
-              </div>
-            )}
-            
-            {hasMore && articles.length > 0 && (
-              <div className="text-center mt-8">
-                <button
-                  onClick={loadMoreArticles}
-                  disabled={loading}
-                  className={`px-6 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors ${
-                    loading ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                >
-                  {loading ? 'Loading...' : 'Load More'}
-                </button>
-              </div>
-            )}
-          </>
-        )}
-        
-        <ArticleModal article={selectedArticle} onClose={closeArticleDetails} />
+    <main className="p-6 max-w-6xl mx-auto">
+      <h1 className="text-3xl font-bold text-center mb-4">News Explorer</h1>
+      <CategoryFilter selectedCategory={selectedCategory} onCategoryChange={setSelectedCategory} />
+
+      {error && <ErrorBanner message={error} apiKey={API_KEY} />}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {(useMockData()
+          ? [
+              {
+                source: { id: null, name: 'Mock Source' },
+                author: 'Developer',
+                title: 'This is a mock article because the API key is missing',
+                description: 'Set your environment variable to see real articles.',
+                url: '#',
+                urlToImage: 'https://via.placeholder.com/640x360?text=Missing+API+Key',
+                publishedAt: new Date().toISOString(),
+                content: 'Use real API key to fetch real news content.'
+              }
+            ]
+          : articles
+        ).map((article, index) => (
+          <ArticleCard key={index} article={article} onClick={() => setSelectedArticle(article)} />
+        ))}
       </div>
+
+      {hasMore && !useMockData() && (
+        <div className="flex justify-center mt-8">
+          <button
+            onClick={() => loadArticles('loadMore')}
+            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+          >
+            {loading ? 'Loading...' : 'Load More'}
+          </button>
+        </div>
+      )}
+
+      <ArticleModal article={selectedArticle} onClose={() => setSelectedArticle(null)} />
     </main>
   );
 }
-
