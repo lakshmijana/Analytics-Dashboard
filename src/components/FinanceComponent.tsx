@@ -539,7 +539,7 @@ function StockChart({
         display: false
       },
       tooltip: {
-        mode: 'index',
+        mode: 'index' as const,
         intersect: false,
         callbacks: {
           label: function(context: any) {
@@ -571,7 +571,7 @@ function StockChart({
       }
     },
     interaction: {
-      mode: 'index',
+      mode: 'index' as const,
       intersect: false
     }
   };
