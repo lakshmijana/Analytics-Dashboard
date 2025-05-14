@@ -428,7 +428,7 @@ function StockOverview({ stockData }: { stockData: StockData }) {
           <div className="font-medium">${stockData.previousClose.toFixed(2)}</div>
         </div>
         <div className="bg-gray-50 p-3 rounded">
-          <div className="text-sm text-gray-500">Day's Range</div>
+          <div className="text-sm text-gray-500">Days Range</div>
           <div className="font-medium">${stockData.low.toFixed(2)} - ${stockData.high.toFixed(2)}</div>
         </div>
         <div className="bg-gray-50 p-3 rounded">
